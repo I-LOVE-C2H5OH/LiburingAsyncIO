@@ -49,7 +49,6 @@ bool Server::update()
             mainClients.erase(mainClients.begin() + i);
             if(mainClients.size() == 0)
             {
-                printf("clients is empy\n");
                 return false;
             }
         }
