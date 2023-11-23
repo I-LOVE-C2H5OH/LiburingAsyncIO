@@ -37,19 +37,6 @@ void ioring::addInQueueRead(ClientData* clientData){
     io_uring_submit(&mainRing);
 }
 
-void ioring::addInQueueWait(ClientData* clientData, long long wait)
-{
-    mainSQE = io_uring_get_sqe(&mainRing);
-
-
-    struct __kernel_timespec delay;
-    delay.tv_sec = 3;
-
-    io_uring_prep_timeout(mainSQE, &delay, 0, 0);
-    io_uring_sqe_set_data(mainSQE, (void*)clientData);
-    io_uring_submit(&mainRing);
-}
-
 void ioring::addInQueueSend(ClientData* clientData, char* buffer, int buffersize){
     mainSQE = io_uring_get_sqe(&mainRing);
     io_uring_prep_send(mainSQE, clientData->fd, buffer, buffersize, 0);

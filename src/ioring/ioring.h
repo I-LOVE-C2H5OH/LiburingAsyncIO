@@ -29,7 +29,6 @@ public:
   void writeFile(char* buffer, uint32_t bufferSize);
   void addInQueueAccept(ClientData* clientData);
   void addInQueueRead(ClientData* clientData);
-  void addInQueueWait(ClientData* clientData, long long wait);
   void addInQueueSend(ClientData* clientData, char* buffer, int buffersize);
   
   /*

@@ -13,7 +13,6 @@ Client::Client(int clientfd, ioring* ioringptr, uint clientMaxBufferSize, unsign
     mainClientData->uniqueID = clientfd;
     mainClientData->type=ioring::EventType::NewMessage;
     mainioringptr->addInQueueRead(mainClientData);
-    printf("ClientHello!!!\n");
 }
 
 bool Client::update()
@@ -33,12 +32,10 @@ bool Client::update()
     int result = mainioringptr->isMyEvent(mainClientData);
     if(result == 0)
     {
-        printf("client disconnected\n");
         return false;
     }
     if(result > 0)
     {
-        printf("client send: %s\n", mainClientData->buffer);
         mainioringptr->writeFile(mainClientData->buffer, result);
         mainioringptr->addInQueueRead(mainClientData);
         mainState = CurrentState::WaitTimer;
