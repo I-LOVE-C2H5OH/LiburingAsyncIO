@@ -44,5 +44,6 @@ bool Client::update()
 
 Client::~Client()
 {
+    free(mainClientData->buffer);
     delete mainClientData;
 }
