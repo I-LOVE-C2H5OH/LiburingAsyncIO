@@ -27,7 +27,6 @@ bool Client::update()
     {
         mainioringptr->writeFile(mainClientData->buffer, result);
         mainState = CurrentState::WaitTimer;
-        mainTimer = clock();
         mainioringptr->addInQueueWait(mainClientData, mainClientWaitSec);
     }
     else if(mainState == CurrentState::WaitTimer && result != -1)
