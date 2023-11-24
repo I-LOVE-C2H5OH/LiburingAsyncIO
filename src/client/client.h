@@ -4,8 +4,6 @@
 #include <liburing.h>
 #include <vector>
 #include <string>
-#include <ctime>
-#include <chrono>
 
 class Client{
 public:
@@ -25,5 +23,4 @@ private:
     unsigned long long mainClientWaitSec;
     ioring* mainioringptr;
     std::string* mainMessageForClient;
-    clock_t mainTimer;
 };
