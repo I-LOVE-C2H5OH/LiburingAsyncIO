@@ -17,36 +17,32 @@ Client::Client(int clientfd, ioring* ioringptr, uint clientMaxBufferSize, unsign
 
 bool Client::update()
 {
-    if(mainState == CurrentState::WaitTimer)
-    {
-        clock_t currentClocks = clock();
-        if(((currentClocks - mainTimer)/CLOCKS_PER_SEC) > mainClientWaitSec)
-        {
-            char* buffer = new char[mainMessageForClient->length() + 1];
-            memset(buffer, mainMessageForClient->length(), 0);
-            memcpy(buffer, mainMessageForClient->c_str(), mainMessageForClient->length());
-            mainioringptr->addInQueueSend(mainClientData, buffer, mainMessageForClient->length() + 1);
-            mainState = CurrentState::waitMessage;
-        }
-    }
     int result = mainioringptr->isMyEvent(mainClientData);
-    if(result == 0)
+    
+    if(result == 0 && mainState == CurrentState::waitMessage)
     {
         return false;
     }
-    if(result > 0)
+    else if(result > 0 && mainState == CurrentState::waitMessage)
     {
         mainioringptr->writeFile(mainClientData->buffer, result);
-        mainioringptr->addInQueueRead(mainClientData);
         mainState = CurrentState::WaitTimer;
         mainTimer = clock();
-
-   }
-
+        mainioringptr->addInQueueWait(mainClientData, mainClientWaitSec);
+    }
+    else if(mainState == CurrentState::WaitTimer && result != -1)
+    {
+        char* buffer = new char[mainMessageForClient->length() + 1];
+        memset(buffer, mainMessageForClient->length(), 0);
+        memcpy(buffer, mainMessageForClient->c_str(), mainMessageForClient->length());
+        mainioringptr->addInQueueSend(mainClientData, buffer, mainMessageForClient->length() + 1);
+        mainState = CurrentState::waitMessage;
+        mainioringptr->addInQueueRead(mainClientData);
+    }
     return true;
 }
 
 Client::~Client()
 {
-    
+    delete mainClientData;
 }

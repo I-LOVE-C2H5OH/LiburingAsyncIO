@@ -38,13 +38,11 @@ Server::Server(uint16_t port, int queueDepth, ioring* ioringptr, uint clientMaxB
 
 bool Server::update()
 {
-    int result = mainIoringptr->isMyEvent(&mainClientData);
     for (uint i = 0; i < mainClients.size(); i++)
     {
-        bool result = mainClients[i]->update();
-        if(!result)
+        bool clientesult = mainClients[i]->update();
+        if(!clientesult)
         {
-            printf("ClientDisconnected\n");
             delete mainClients[i];
             mainClients.erase(mainClients.begin() + i);
             if(mainClients.size() == 0)
@@ -53,6 +51,7 @@ bool Server::update()
             }
         }
     }
+    int result = mainIoringptr->isMyEvent(&mainClientData);
     //Подключился новый клиент
     if(result > 0)
     {

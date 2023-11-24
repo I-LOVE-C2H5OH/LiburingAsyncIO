@@ -9,11 +9,6 @@ ioring::ioring(int queue_depth, char* filename) {
     mainfd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 }
 
-char* ioring::readFile(char* filename)
-{
-    return NULL;
-}
-
 void ioring::writeFile(char* buffer, uint32_t bufferSize)
 {
     mainSQE = io_uring_get_sqe(&mainRing);
@@ -44,12 +39,23 @@ void ioring::addInQueueSend(ClientData* clientData, char* buffer, int buffersize
     io_uring_submit(&mainRing);
 }
 
+void ioring::addInQueueWait(ClientData* clientData, long long waitDelay){
+    mainSQE = io_uring_get_sqe(&mainRing);
+    struct __kernel_timespec delay = {
+        .tv_sec = waitDelay,
+        .tv_nsec = 0
+    };
+    io_uring_prep_timeout(mainSQE, &delay, 0, 0);
+    io_uring_sqe_set_data(mainSQE, clientData);
+    io_uring_submit(&mainRing);
+}
+
 int ioring::isMyEvent(ClientData* clientData)
 {
-    io_uring_peek_cqe(&mainRing, &mainCQE);
+    io_uring_wait_cqe(&mainRing, &mainCQE);
     if(!mainCQE)
     {
-        return -1;
+        throw std::runtime_error("Error in waiting CQE\n");
     }
     ClientData* CQEUserData = (ClientData*)io_uring_cqe_get_data(mainCQE);
     if(CQEUserData == nullptr)
@@ -59,8 +65,9 @@ int ioring::isMyEvent(ClientData* clientData)
     }
     else if(clientData->uniqueID == CQEUserData->uniqueID)
     {
+        int res = mainCQE->res;
         io_uring_cqe_seen(&mainRing, mainCQE);
-        return mainCQE->res;
+        return res;
     }
     return -1;
 
